@@ -178,7 +178,12 @@ class Parser {
     public boolean exp2() {
         if (comparisonOp()) {
             current_index++;
-            return simpleExp();
+            if (simpleExp()) {
+                current_index++;
+                return exp2();
+            } else {
+                return false;
+            }
         } else {
             current_index--;
             return true;
@@ -325,12 +330,28 @@ class Parser {
     public boolean statementSequence2() {
         if (getToken().equals(";")) {
             current_index++;
-            return (statement());
+             if (statement()) {
+                current_index++;
+                return statementSequence2();
+            } else {
+                return false;
+            }
         } else {
-            return statement();
+            current_index--;
+            return true;
         }
+            
+//            
+//            return (statement());
+//        } else {
+//            return statement();
+//        }
     }
 
+    
+    
+    
+   
     public boolean program() {
         if (statementSequence()) {
             System.out.println("Program Found");
@@ -426,5 +447,5 @@ public class ParserProject {
         Parser current = new Parser(program);
         current.program();
 
-}
+    }
 }
