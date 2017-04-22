@@ -406,18 +406,25 @@ public class ParserProject {
             }
 
         }
+        if (!temp.isEmpty()) {
+            ArrayList<String> temp2 = new ArrayList<>();
+            for (String temp1 : temp) {
+                temp2.add(temp1);
+            }
+            stats.add(xxx++, temp2);
+        }
 
         ArrayList<String> program = new ArrayList<>();
         for (ArrayList<String> input1 : stats) {
             program.addAll(input1);
         }
-
+//
 //        for (String x:program)
 //        {
 //            System.out.println(x+ " ");
 //        }
         Parser current = new Parser(program);
         current.program();
-    }
 
+}
 }
