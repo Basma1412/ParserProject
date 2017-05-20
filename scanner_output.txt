@@ -32,4 +32,5 @@ x~Identifier
 ;~Special_Symbol
 write~Reserved_Word
 fact~Identifier
+;~Special_Symbol
 end~Reserved_Word
