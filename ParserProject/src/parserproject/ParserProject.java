@@ -19,6 +19,9 @@ class Parts {
 
 class Parser {
 
+    int semicolomns=0;
+    
+    int expectedsemicolomns=0;
     ArrayList<String> tokens;
     int current_index;
     String token;
@@ -45,9 +48,10 @@ class Parser {
         if (getToken().equals("(")) {
             current_index++;
             if (exp()) {
-//                current_index++;
+               current_index++;
                 return getToken().equals(")");
             } else {
+    
                 return false;
             }
         } else {
@@ -128,6 +132,7 @@ class Parser {
             }
 
         } else {
+        
             return false;
         }
     }
@@ -146,6 +151,7 @@ class Parser {
                 return simpleExp2();
             } else {
 //                current_index--;
+            
                 return false;
             }
         } else {
@@ -164,13 +170,12 @@ class Parser {
         return xy.equals("<") || xy.equals("=") || xy.equals(">");
     }
 
-    //exp-> simplexp x
-    //x-> comp simple|siple
     public boolean exp() {
         if (simpleExp()) {
             current_index++;
             return exp2();
         } else {
+         
             return false;
         }
     }
@@ -182,6 +187,7 @@ class Parser {
                 current_index++;
                 return exp2();
             } else {
+            
                 return false;
             }
         } else {
@@ -196,6 +202,7 @@ class Parser {
             current_index++;
             return exp();
         } else {
+        
             return false;
         }
 
@@ -206,6 +213,7 @@ class Parser {
             current_index++;
             return (getToken().equals("identifier"));
         } else {
+         
             return false;
         }
     }
@@ -226,6 +234,7 @@ class Parser {
                 current_index--;
             }
         }
+     
         return false;
     }
 
@@ -239,9 +248,16 @@ class Parser {
                     current_index++;
                     return exp();
                 }
+                else 
+                {
+                    System.out.println("Error");
+                    System.exit(0);
+                    
+                }
             }
 
         }
+   
         return false;
 
     }
@@ -257,6 +273,8 @@ class Parser {
                         current_index++;
                         return ifStmt2();
                     } else {
+                            System.out.println("Error");
+                    System.exit(0);
                         current_index--;
                     }
                 }
@@ -265,6 +283,7 @@ class Parser {
             }
 
         }
+
         return false;
 
     }
@@ -283,69 +302,84 @@ class Parser {
                 }
                 break;
         }
+       
         return false;
     }
 
+    boolean assignmentFlag=false;
     public boolean statement() {
         if (ifStmt()) {
+            assignmentFlag=false;
             System.out.println("If Statement found");
             return true;
 
         } else if (readStmt()) {
-
+expectedsemicolomns++;
+            assignmentFlag=true;
             System.out.println("Read Statement found");
             return true;
         } else if (repeatStmt()) {
 
+            assignmentFlag=true;
             System.out.println("Repeat Statement found");
             return true;
         } else if (writeStmt()) {
 
+            assignmentFlag=true;
             System.out.println("Write Statement found");
             return true;
         } else if (assignStmt()) {
-
+expectedsemicolomns++;
+            assignmentFlag=true;
             System.out.println("Assign Statement found");
-//            current_index--;
             return true;
         } else {
+    
+              System.out.println("Error");
             return false;
         }
 
-//        
-//        return ifStmt() || readStmt() || repeatStmt() || writeStmt() || assignStmt();
     }
 
-    //statement seq2
-    //seq2 ;statement||E
+    
     public boolean statementSequence() {
         if (statement()) {
             current_index++;
             return statementSequence2();
         } else {
+        
             return false;
         }
     }
 
     public boolean statementSequence2() {
         if (getToken().equals(";")) {
+            if (current_index==tokens.size()-1)
+            {
+                return true;
+            }
+            semicolomns++;
             current_index++;
              if (statement()) {
                 current_index++;
                 return statementSequence2();
+                
             } else {
+              
                 return false;
             }
-        } else {
-            current_index--;
-            return true;
-        }
+        } 
+        else {
             
-//            
-//            return (statement());
-//        } else {
-//            return statement();
-//        }
+               if (current_index==tokens.size()&&assignmentFlag)
+            {
+                return false;
+            }
+            current_index--;
+         return true;
+        
+        }
+
     }
 
     
@@ -353,11 +387,22 @@ class Parser {
     
    
     public boolean program() {
-        if (statementSequence()) {
+        if (statementSequence()&& (expectedsemicolomns==semicolomns)) {
+            
             System.out.println("Program Found");
+            
+            
             return true;
+           
         }
-        return false;
+        else 
+        {
+                     System.out.println("Error");
+                     return true;
+   
+        }
+   
+//        return false;
     }
 
 }
