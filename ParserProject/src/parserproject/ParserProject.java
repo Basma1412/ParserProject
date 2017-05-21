@@ -4,154 +4,7 @@ import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 import java.util.Scanner;
-import java.util.Stack;
-
-class Old {
-
-    String identifier;
-    String expression;
-    int result;
-
-    public Old(String i, String e) {
-        this.identifier = i;
-        this.expression = e;
-    }
-
-    public void setResult(int r) {
-        this.result = r;
-    }
-}
-
-class SemanticAnalyser {
-
-    String constantExpression;
-    String identifier = "";
-    String expression = "";
-    ArrayList<Old> olds = new ArrayList<>();
-
-    public SemanticAnalyser(String cE) {
-        this.constantExpression = cE;
-    }
-
-    public Old cutString2(String constantExpression2) {
-
-        String[] parts = constantExpression2.split(":=");
-        identifier = parts[0]; // 004
-        expression = parts[1]; // 034556
-        return new Old(identifier, expression);
-    }
-
-    public void cutString() {
-
-        List<String> list = new ArrayList<String>(Arrays.asList(constantExpression.split(";")));
-
-        for (String list1 : list) {
-            Old temp = cutString2(list1);
-            boolean flag = false;
-            for (int ii = olds.size()-1;ii>=0;ii--) {
-                Old old1=olds.get(ii);
-                if ((expression.contains(old1.identifier))) {
-                    flag = true;
-                    String resultT = old1.result+"";
-                    String id = old1.identifier;
-                    String  xx= expression.replaceAll(id,resultT);
-                    expression=xx;
-                }
-            }
-            int res = getValue();
-            temp.setResult(res);
-            olds.add(temp);
-
-        }
-
-    }
-
-    public int getValue() {
-        
-        StringBuilder sb = new StringBuilder(expression);
-        expression = sb.toString();
-
-        char[] tokens = expression.toCharArray();
-
-        Stack<Integer> numbersStack = new Stack<>();
-        Stack<Character> operatorsStack = new Stack<>();
-
-        for (int i = 0; i < tokens.length; i++) {
-
-            if (tokens[i] == ' ') {
-                continue;
-            }
-
-            if (tokens[i] >= '0' && tokens[i] <= '9') {
-                StringBuffer tempInt = new StringBuffer();
-                int counter = i;
-                int z = 0;
-                while (counter < tokens.length && tokens[counter] >= '0' && tokens[counter] <= '9') {
-                    tempInt.append(tokens[counter++]);
-                    z++;
-                }
-                i += (z - 1);
-                numbersStack.push(Integer.parseInt(tempInt.toString()));
-            } else if (tokens[i] == '(') {
-                operatorsStack.push(tokens[i]);
-            } else if (tokens[i] == ')') {
-                while (operatorsStack.peek() != '(') {
-                    int result = applyOp(operatorsStack.pop(), numbersStack.pop(), numbersStack.pop());
-                    numbersStack.push(result);
-                }
-                operatorsStack.pop();
-            } else if (tokens[i] == '+' || tokens[i] == '-' || tokens[i] == '*' || tokens[i] == '/') {
-                while (!operatorsStack.empty() && hasPriority(tokens[i], operatorsStack.peek())) {
-                    int result2 = applyOp(operatorsStack.pop(), numbersStack.pop(), numbersStack.pop());
-                    numbersStack.push(result2);
-                }
-
-                operatorsStack.push(tokens[i]);
-            }
-        }
-
-        while (!operatorsStack.empty()) {
-            int temp = applyOp(operatorsStack.pop(), numbersStack.pop(), numbersStack.pop());
-            numbersStack.push(temp);
-        }
-
-        int value = numbersStack.pop();
-        System.out.println("identifier = " + value);
-
-        return value;
-    }
-
-    public static boolean hasPriority(char op1, char op2) {
-        if (op2 == '(' || op2 == ')') {
-            return false;
-        }
-        if ((op1 == '*' || op1 == '/') && (op2 == '+' || op2 == '-')) {
-            return false;
-        } else {
-            return true;
-        }
-    }
-
-    public static int applyOp(char op, int b, int a) {
-        switch (op) {
-            case '+':
-                return a + b;
-            case '-':
-                return a - b;
-            case '*':
-                return a * b;
-            case '/':
-                if (b == 0) {
-                    throw new UnsupportedOperationException("Cannot divide by zero");
-                }
-                return a / b;
-        }
-        return 0;
-    }
-}
 
 class Parts {
 
@@ -332,7 +185,7 @@ class Parser {
                 return false;
             }
         } else {
-            //   current_index--;
+            current_index--;
             return true;
         }
     }
@@ -453,7 +306,7 @@ class Parser {
         } else if (assignStmt()) {
 
             System.out.println("Assign Statement found");
-            current_index--;
+//            current_index--;
             return true;
         } else {
             return false;
@@ -475,37 +328,36 @@ class Parser {
     }
 
     public boolean statementSequence2() {
-
-//          if (((getToken() == null)&& current_index==tokens.size()) || ("until".equals(getToken())) || ("end".equals(getToken()))) {
-//            return true;
-//        }
-//          if ((getToken() == null)&& current_index<tokens.size()) {
-//            return true;
-//        }
-        if ((getToken() == null) || ("until".equals(getToken())) || ("end".equals(getToken()))) {
-            return true;
-        } else if (getToken().equals(";")) {
-
+        
+         if ((getToken() == null)||("until".equals(getToken()))||("end".equals(getToken())))
+         {
+             return true;
+         }
+       else if (getToken().equals(";")) {
+            
+           
             current_index++;
-            if (getToken() == null) {
-
-                current_index++;
-            } else {
-                return false;
-            }
-
-            if (statement()) {
+             if (getToken() == null)
+             {
+                 
+            current_index++;
+             }
+             else 
+             {
+                 return false;
+             }
+            
+             if (statement()) {
                 current_index++;
                 return statementSequence2();
             } else {
                 return true;
             }
         } else {
-            System.out.println("ERror");
-            System.exit(0);
+            
             return false;
         }
-
+            
 //            
 //            return (statement());
 //        } else {
@@ -513,6 +365,10 @@ class Parser {
 //        }
     }
 
+    
+    
+    
+   
     public boolean program() {
         if (statementSequence()) {
             System.out.println("Program Found");
@@ -520,7 +376,9 @@ class Parser {
         }
         return false;
     }
+
 }
+
 
 public class ParserProject {
 
@@ -543,25 +401,6 @@ public class ParserProject {
             }
 
         }
-
-        Scanner t = null;
-        String inputSource = "";
-
-        try {
-            t = new Scanner(new BufferedReader(new FileReader("../tiny_sample_code.txt")));
-            while (t.hasNext()) {
-                String inputString = t.next();
-                inputSource += inputString;
-            }
-        } catch (Exception e) {
-
-        } finally {
-            if (t != null) {
-                t.close();
-            }
-
-        }
-
         ArrayList<Parts> input = new ArrayList<>();
         int j = 0;
         for (String data1 : data) {
@@ -572,8 +411,6 @@ public class ParserProject {
             input.add(j++, new Parts(part1, part2));
         }
 
-        ArrayList<String> values = new ArrayList<>();
-
         ArrayList<String> parsed_data = new ArrayList<>();
         j = 0;
         for (Parts input1 : input) {
@@ -581,13 +418,10 @@ public class ParserProject {
             String part2 = input1.part2;
 
             if ("Identifier".equals(part2)) {
-                values.add(j, part1);
                 parsed_data.add(j++, "identifier");
             } else if ("number".equals(part2)) {
-                values.add(j, part1);
                 parsed_data.add(j++, "number");
             } else {
-                values.add(j, null);
                 parsed_data.add(j++, part1);
             }
         }
@@ -623,31 +457,32 @@ public class ParserProject {
         for (ArrayList<String> input1 : stats) {
             program.addAll(input1);
         }
-
+//
+//        for (String x:program)
+//        {
+//            System.out.println(x+ " ");
+//        }
+        
+        
+        
         ArrayList<String> fProgram;
-
-        ArrayList<String> valuesProgram = new ArrayList<>();
         fProgram = new ArrayList<>();
-        for (int i = 0; i < program.size(); i++) {
-            if (";".equals(program.get(i)) || "end".equals(program.get(i))) {
-
-                fProgram.add(program.get(i));
+        for (String program1 : program) {
+            if (";".equals(program1)||"end".equals(program1))
+            {
+                
+                fProgram.add(program1);
                 fProgram.add(null);
-
-                valuesProgram.add(values.get(i));
-                valuesProgram.add(null);
-            } else {
-                valuesProgram.add(values.get(i));
-                fProgram.add(program.get(i));
+            }
+            else
+            {
+                
+                fProgram.add(program1);
             }
         }
-
+        
         Parser current = new Parser(fProgram);
-        if (current.program()) {
-            SemanticAnalyser sa = new SemanticAnalyser(inputSource);
-            sa.cutString();
-//            sa.getValue();
-        }
+        current.program();
 
     }
 }
