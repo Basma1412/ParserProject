@@ -17,63 +17,150 @@ class Parts {
     }
 }
 
+class Value {
+
+    String id;
+    String value;
+
+    public Value(String id, String value) {
+        this.id = id;
+        this.value = value;
+    }
+}
+
 class Parser {
 
     ArrayList<String> tokens;
+
+    ArrayList<String> values;
+
+    ArrayList<Value> results;
+
     int current_index;
     String token;
 
-    public Parser(ArrayList<String> tokens) {
+    public Parser(ArrayList<String> tokens, ArrayList<String> values) {
         this.tokens = tokens;
         this.current_index = 0;
+        this.values = values;
+        this.results = new ArrayList<>();
     }
 
-    public void updateToken() {
-//        current_index++;
+    public static boolean isNumeric(String str) {
+        try {
+            double d = Double.parseDouble(str);
+        } catch (NumberFormatException nfe) {
+            return false;
+        }
+        return true;
     }
 
     public String getToken() {
         if (current_index >= tokens.size()) {
             return "";
         }
-//|| tokens.get(current_index).equals(";")
         return tokens.get(current_index);
     }
 
-    public boolean factor() {
+    public String getValue() {
+        if (current_index >= tokens.size()) {
+            return "";
+        }
+
+        return values.get(current_index);
+    }
+
+    public void saveNewIdentifier(String assign) {
+
+        String[] parts = assign.split(":=", 2);
+        String part1 = parts[0];
+        String part2 = parts[1];
+        int res = evaluate(part2);
+    }
+
+    public int evaluate(String str) {
+        if (str.contains("+")) {
+            String[] parts = str.split("+", 2);
+            String part1 = parts[0];
+            String part2 = parts[1];
+        } else if (str.contains("-")) {
+
+            String[] parts = str.split("-", 2);
+            String part1 = parts[0];
+            String part2 = parts[1];
+        } else if (str.contains("*")) {
+
+            String[] parts = str.split("*", 2);
+            String part1 = parts[0];
+            String part2 = parts[1];
+
+        } else if (str.contains("/")) {
+
+            String[] parts = str.split("/", 2);
+            String part1 = parts[0];
+            String part2 = parts[1];
+        } else {
+
+            String[] parts = str.split("+", 2);
+            String part1 = parts[0];
+            String part2 = parts[1];
+        }
+        return 0;
+    }
+
+    public String factor() {
 
         if (getToken().equals("(")) {
             current_index++;
-            if (exp()) {
-//                current_index++;
-                return getToken().equals(")");
+            String expr = exp();
+            if (!"".equals(expr)) {
+                if (getToken().equals(")")) {
+                    return expr;
+                } else {
+
+                    return "Error";
+                }
             } else {
-                return false;
+                return "Error";
             }
         } else {
-            return getToken().equals("number") || getToken().equals("identifier");
+
+            String currentToken = getToken();
+            String currentValue = getValue();
+
+            if (currentToken.equals("number") || currentToken.equals("identifier")) {
+                return currentValue;
+            } else {
+                return "Error";
+            }
         }
     }
 
-    public boolean mulop() {
-        return getToken().equals("*") || getToken().equals("/");
-    }
-//term->termmulopfactor|factor
-    //term->factor term2
-    //term2->mulopfactor|E
-
-    public boolean term() {
-        boolean flag = false;
-        if (factor()) {
-            flag = true;
+    public String mulop() {
+        if (getToken().equals("*") || getToken().equals("/")) {
+            return getToken();
+        } else {
+            return "Error";
         }
-        if (flag) {
+    }
+
+    public String term() {
+        String flag = "Error";
+        String fact2 = factor();
+        if (!"Error".equals(fact2)) {
+            flag = "True";
+        }
+        if (flag.equals("True")) {
             current_index++;
-            if (term2()) {
-                return true;
+            String t2 = term2();
+            if (!"Error".equals(t2)) {
+           
+                
+                String termret = checkterm(fact2 + "" + t2);
+                return termret;
             } else {
                 current_index--;
-                return true;
+                return "Error";
             }
         } else {
             return flag;
@@ -82,79 +169,330 @@ class Parser {
 
     public boolean ret = false;
 
-    public boolean term2() {
+    
+    
+     public String checkterm(String str) {
+        if (str.contains("*")) {
 
-        if (mulop()) {
+            String[] parts = str.split("\\*", 2);
+            String part1 = parts[0];
+            String part2 = parts[1];
+
+            if (!isNumeric(part1) && isNumeric(part2)) {
+
+                Integer oInt2 = Integer.parseInt(part2);
+                Integer oInt1 = 1;
+                for (Value v : results) {
+                    if (v.id.equals(part1)) {
+                        oInt1 = Integer.parseInt(v.value);
+                    }
+                }
+                int rr = oInt1 * oInt2;
+                return rr + "";
+
+            } else if (!isNumeric(part2) && isNumeric(part1)) {
+                Integer oInt1 = Integer.parseInt(part1);
+
+                Integer oInt2 = 1;
+                for (Value v : results) {
+                    if (v.id.equals(part2)) {
+                        oInt2 = Integer.parseInt(v.value);
+                    }
+                }
+                int rr = oInt1 * oInt2;
+                return rr + "";
+            }
+            
+            else if (!isNumeric(part2) && !isNumeric(part1)) {
+                Integer oInt1 =1;
+                 for (Value v : results) {
+                    if (v.id.equals(part1)) {
+                        oInt1 = Integer.parseInt(v.value);
+                    }
+                }
+
+                Integer oInt2 = 1;
+                for (Value v : results) {
+                    if (v.id.equals(part2)) {
+                        oInt2 = Integer.parseInt(v.value);
+                    }
+                }
+                int rr = oInt1 * oInt2;
+                return rr + "";
+            }
+            else {
+
+                Integer oInt1 = Integer.parseInt(part1);
+                Integer oInt2 = Integer.parseInt(part2);
+
+                int rr = oInt1 * oInt2;
+                return rr + "";
+            }
+
+        } 
+        
+        else if (str.contains("/")) {
+
+            String[] parts = str.split("\\/", 2);
+            String part1 = parts[0];
+            String part2 = parts[1];
+
+            if (!isNumeric(part1) && isNumeric(part2)) {
+
+                Integer oInt2 = Integer.parseInt(part2);
+                Integer oInt1 = 1;
+                for (Value v : results) {
+                    if (v.id.equals(part1)) {
+                        oInt1 = Integer.parseInt(v.value);
+                    }
+                }
+                int rr = oInt1 / oInt2;
+                return rr + "";
+
+            } else if (!isNumeric(part2) && isNumeric(part1)) {
+                Integer oInt1 = Integer.parseInt(part1);
+
+                Integer oInt2 = 1;
+                for (Value v : results) {
+                    if (v.id.equals(part2)) {
+                        oInt2 = Integer.parseInt(v.value);
+                    }
+                }
+                int rr = oInt1 / oInt2;
+                return rr + "";
+            } 
+             else if (!isNumeric(part2) && !isNumeric(part1)) {
+                Integer oInt1 =1;
+                 for (Value v : results) {
+                    if (v.id.equals(part1)) {
+                        oInt1 = Integer.parseInt(v.value);
+                    }
+                }
+
+                Integer oInt2 = 1;
+                for (Value v : results) {
+                    if (v.id.equals(part2)) {
+                        oInt2 = Integer.parseInt(v.value);
+                    }
+                }
+                int rr = oInt1 / oInt2;
+                return rr + "";
+            }
+            else {
+
+                Integer oInt1 = Integer.parseInt(part1);
+                Integer oInt2 = Integer.parseInt(part2);
+
+                int rr = oInt1 / oInt2;
+                return rr + "";
+            }
+           
+        } 
+        else {
+            return str;
+        }
+    }
+    
+    public String term2() {
+
+        String mOP = mulop();
+        if (!"Error".equals(mOP)) {
             current_index++;
-            if (factor()) {
+            String f = factor();
+            if (!f.equals("Error")) {
                 current_index++;
                 ret = true;
-                return term2();
+                String current = mOP + "" + f;
+                return current + term2();
+                
+                
             } else {
 
                 current_index--;
 
-                return false;
+                return "Error";
             }
         } else {
-//            return getToken().equals("");
-//            if (ret)
-//            {
-            current_index--;
-//            }
 
-            return true;
+            current_index--;
+
+            return "";
         }
     }
 
-    public boolean addop() {
-
-        return getToken().equals("+") || getToken().equals("-");
+    public String addop() {
+        if (getToken().equals("+") || getToken().equals("-")) {
+            return getToken();
+        } else {
+            return "Error";
+        }
     }
 
-    public boolean simpleExp() {
+    public String checksimpleExp(String str) {
+        if (str.contains("+")) {
+
+            String[] parts = str.split("\\+", 2);
+            String part1 = parts[0];
+            String part2 = parts[1];
+
+            if (!isNumeric(part1) && isNumeric(part2)) {
+
+                Integer oInt2 = Integer.parseInt(part2);
+                Integer oInt1 = 1;
+                for (Value v : results) {
+                    if (v.id.equals(part1)) {
+                        oInt1 = Integer.parseInt(v.value);
+                    }
+                }
+                int rr = oInt1 + oInt2;
+                return rr + "";
+
+            } else if (!isNumeric(part2) && isNumeric(part1)) {
+                Integer oInt1 = Integer.parseInt(part1);
+
+                Integer oInt2 = 1;
+                for (Value v : results) {
+                    if (v.id.equals(part2)) {
+                        oInt2 = Integer.parseInt(v.value);
+                    }
+                }
+                int rr = oInt1 + oInt2;
+                return rr + "";
+            } 
+             else if (!isNumeric(part2) && !isNumeric(part1)) {
+                Integer oInt1 =1;
+                 for (Value v : results) {
+                    if (v.id.equals(part1)) {
+                        oInt1 = Integer.parseInt(v.value);
+                    }
+                }
+
+                Integer oInt2 = 1;
+                for (Value v : results) {
+                    if (v.id.equals(part2)) {
+                        oInt2 = Integer.parseInt(v.value);
+                    }
+                }
+                int rr = oInt1 + oInt2;
+                return rr + "";
+            }
+            else {
+
+                Integer oInt1 = Integer.parseInt(part1);
+                Integer oInt2 = Integer.parseInt(part2);
+
+                int rr = oInt1 + oInt2;
+                return rr + "";
+            }
+
+        } 
+        
+        else if (str.contains("-")) {
+
+            String[] parts = str.split("\\-", 2);
+            String part1 = parts[0];
+            String part2 = parts[1];
+
+            if (!isNumeric(part1) && isNumeric(part2)) {
+
+                Integer oInt2 = Integer.parseInt(part2);
+                Integer oInt1 = 1;
+                for (Value v : results) {
+                    if (v.id.equals(part1)) {
+                        oInt1 = Integer.parseInt(v.value);
+                    }
+                }
+                int rr = oInt1 - oInt2;
+                return rr + "";
+
+            } else if (!isNumeric(part2) && isNumeric(part1)) {
+                Integer oInt1 = Integer.parseInt(part1);
+
+                Integer oInt2 = 1;
+                for (Value v : results) {
+                    if (v.id.equals(part2)) {
+                        oInt2 = Integer.parseInt(v.value);
+                    }
+                }
+                int rr = oInt1 - oInt2;
+                return rr + "";
+            } 
+             else if (!isNumeric(part2) && !isNumeric(part1)) {
+                Integer oInt1 =1;
+                 for (Value v : results) {
+                    if (v.id.equals(part1)) {
+                        oInt1 = Integer.parseInt(v.value);
+                    }
+                }
+
+                Integer oInt2 = 1;
+                for (Value v : results) {
+                    if (v.id.equals(part2)) {
+                        oInt2 = Integer.parseInt(v.value);
+                    }
+                }
+                int rr = oInt1 - oInt2;
+                return rr + "";
+            }
+            else {
+
+                Integer oInt1 = Integer.parseInt(part1);
+                Integer oInt2 = Integer.parseInt(part2);
+
+                int rr = oInt1 - oInt2;
+                return rr + "";
+            }
+           
+        } 
+        else {
+            return str;
+        }
+    }
+
+    public String simpleExp() {
         boolean flag = false;
-        if (term()) {
+        String termT = term();
+        if (!"Error".equals(termT)) {
             flag = true;
         }
 
         if (flag) {
             current_index++;
-            if (simpleExp2()) {
-                return true;
+            String sE2 = simpleExp2();
+            if (!"Error".equals(sE2)) {
+
+                String ret = checksimpleExp(termT + "" + sE2);
+                return ret;
             } else {
                 current_index--;
-                return true;
+                return "Error";
             }
 
         } else {
-            return false;
+            return "Error";
         }
     }
 
-    //simpleexp->term simpleexp2
-    //simpleexp2->addop simpleexp2|E
     boolean flagsE = false;
 
-    public boolean simpleExp2() {
+    public String simpleExp2() {
 
-        if (addop()) {
+        String aOP = addop();
+        if (!"Error".equals(aOP)) {
             current_index++;
-            if (term()) {
+            String termT = term();
+            if (!"Error".equals(termT)) {
                 current_index++;
                 flagsE = true;
-                return simpleExp2();
+                return aOP + "" + termT + simpleExp2();
             } else {
-//                current_index--;
-                return false;
+                return "Error";
             }
         } else {
-//            return getToken().equals("");
-//            if (flagsE)
-//            {
+
             current_index--;
-//            }
-            return true;
+
+            return "";
         }
 
     }
@@ -164,39 +502,39 @@ class Parser {
         return xy.equals("<") || xy.equals("=") || xy.equals(">");
     }
 
-    //exp-> simplexp x
-    //x-> comp simple|siple
-    public boolean exp() {
-        if (simpleExp()) {
+    public String exp() {
+        String sE = simpleExp();
+        if (!"Error".equals(sE)) {
             current_index++;
-            return exp2();
+            return sE + exp2();
         } else {
-            return false;
+            return "Error";
         }
     }
 
-    public boolean exp2() {
+    public String exp2() {
         if (comparisonOp()) {
             current_index++;
-            if (simpleExp()) {
+            String sE = simpleExp();
+            if (!"Error".equals(sE)) {
                 current_index++;
-                return exp2();
+                return sE + "" + exp2();
             } else {
-                return false;
+                return "Error";
             }
         } else {
             current_index--;
-            return true;
+            return "";
         }
     }
 
-    public boolean writeStmt() {
+    public String writeStmt() {
 
         if (getToken().equals("write")) {
             current_index++;
             return exp();
         } else {
-            return false;
+            return "Error";
         }
 
     }
@@ -210,15 +548,28 @@ class Parser {
         }
     }
 
-    public boolean assignStmt() {
+    
+    public void save(String str, String val)
+    {
+        Value val2 = new Value(str,val);
+        results.add(val2);
+    }
+    public String assignStmt() {
 
+        String id = getValue();
         if (getToken().equals("identifier")) {
             current_index++;
             if (getToken().equals(":")) {
                 current_index++;
                 if (getToken().equals("=")) {
                     current_index++;
-                    return exp();
+
+                    String returnedExp = exp();
+                    if (returnedExp != "Error") {
+                        save(id,returnedExp);
+                    }
+
+                    return id + ":=" + returnedExp;
                 } else {
                     current_index--;
                 }
@@ -226,15 +577,14 @@ class Parser {
                 current_index--;
             }
         }
-        return false;
+        return "Error";
     }
 
-    public boolean repeatStmt() {
+    public String repeatStmt() {
 
         if (getToken().equals("repeat")) {
             current_index++;
             if (statementSequence()) {
-//                current_index++;
                 if (getToken().equals("until")) {
                     current_index++;
                     return exp();
@@ -242,19 +592,18 @@ class Parser {
             }
 
         }
-        return false;
+        return "Error";
 
     }
 
     public boolean ifStmt() {
         if (getToken().equals("if")) {
             current_index++;
-            if (exp()) {
+            if (exp() != "Error") {
                 current_index++;
                 if (getToken().equals("then")) {
                     current_index++;
                     if (statementSequence()) {
-//                        current_index++;
                         return ifStmt2();
                     } else {
                         current_index--;
@@ -287,6 +636,7 @@ class Parser {
     }
 
     public boolean statement() {
+        String assign;
         if (ifStmt()) {
             System.out.println("If Statement found");
             return true;
@@ -295,25 +645,22 @@ class Parser {
 
             System.out.println("Read Statement found");
             return true;
-        } else if (repeatStmt()) {
+        } else if (repeatStmt() != "Error") {
 
             System.out.println("Repeat Statement found");
             return true;
-        } else if (writeStmt()) {
+        } else if (writeStmt() != "Error") {
 
             System.out.println("Write Statement found");
             return true;
-        } else if (assignStmt()) {
+        } else if ((assign = assignStmt()) != "Error") {
 
-            System.out.println("Assign Statement found");
-//            current_index--;
+            System.out.println("Assign Statement found " + assign);
             return true;
         } else {
             return false;
         }
 
-//        
-//        return ifStmt() || readStmt() || repeatStmt() || writeStmt() || assignStmt();
     }
 
     //statement seq2
@@ -328,47 +675,32 @@ class Parser {
     }
 
     public boolean statementSequence2() {
-        
-         if ((getToken() == null)||("until".equals(getToken()))||("end".equals(getToken())))
-         {
-             return true;
-         }
-       else if (getToken().equals(";")) {
-            
-           
+
+        if ((getToken() == null) || ("until".equals(getToken())) || ("end".equals(getToken()))) {
+            return true;
+        } else if (getToken().equals(";")) {
+
             current_index++;
-             if (getToken() == null)
-             {
-                 
-            current_index++;
-             }
-             else 
-             {
-                 return false;
-             }
-            
-             if (statement()) {
+            if (getToken() == null) {
+
+                current_index++;
+            } else {
+                return false;
+            }
+
+            if (statement()) {
                 current_index++;
                 return statementSequence2();
             } else {
                 return true;
             }
         } else {
-            
+
             return false;
         }
-            
-//            
-//            return (statement());
-//        } else {
-//            return statement();
-//        }
+
     }
 
-    
-    
-    
-   
     public boolean program() {
         if (statementSequence()) {
             System.out.println("Program Found");
@@ -378,7 +710,6 @@ class Parser {
     }
 
 }
-
 
 public class ParserProject {
 
@@ -412,11 +743,13 @@ public class ParserProject {
         }
 
         ArrayList<String> parsed_data = new ArrayList<>();
+
+        ArrayList<String> values = new ArrayList<>();
         j = 0;
         for (Parts input1 : input) {
             String part1 = input1.part1;
             String part2 = input1.part2;
-
+            values.add(j, part1);
             if ("Identifier".equals(part2)) {
                 parsed_data.add(j++, "identifier");
             } else if ("number".equals(part2)) {
@@ -457,31 +790,31 @@ public class ParserProject {
         for (ArrayList<String> input1 : stats) {
             program.addAll(input1);
         }
-//
-//        for (String x:program)
-//        {
-//            System.out.println(x+ " ");
-//        }
-        
-        
-        
+
         ArrayList<String> fProgram;
+
+        ArrayList<String> valuesTemp = new ArrayList<>();
         fProgram = new ArrayList<>();
-        for (String program1 : program) {
-            if (";".equals(program1)||"end".equals(program1))
-            {
-                
+        for (int i = 0; i < program.size(); i++) {
+            String program1 = program.get(i);
+            String tempValue = values.get(i);
+            if (";".equals(program1) || "end".equals(program1)) {
+
                 fProgram.add(program1);
                 fProgram.add(null);
-            }
-            else
-            {
-                
+
+                valuesTemp.add(tempValue);
+                valuesTemp.add(null);
+
+            } else {
+
+                valuesTemp.add(tempValue);
                 fProgram.add(program1);
             }
         }
-        
-        Parser current = new Parser(fProgram);
+
+        values = valuesTemp;
+        Parser current = new Parser(fProgram, values);
         current.program();
 
     }

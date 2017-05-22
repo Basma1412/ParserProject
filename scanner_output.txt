@@ -1,5 +1,9 @@
-read~Reserved_Word
 x~Identifier
+:~Special_Symbol
+=~Special_Symbol
+5~number
++~Special_Symbol
+7~number
 ;~Special_Symbol
 if~Reserved_Word
 0~number
